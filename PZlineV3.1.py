@@ -1,9 +1,13 @@
 #importing the essential libraries
 import streamlit as st
-st.set_page_config(layout="wide")
 import math
 import pandas as pd
+import numpy as np
 import plotly.express as px
+from sklearn.linear_model import LinearRegression
+
+#Initialize the wide mode by default
+st.set_page_config(layout="wide")
 
 
 #Adding a title 
@@ -74,14 +78,30 @@ with col3:
                 uplim = round(final_df['P_avg(psia)'].max(),-3) + 1000
         except:
              print("Provide Proper input")
+        
+        try:
+             X = final_df['P_avg(psia)'].values.reshape(-1, 1)  # Feature (Pressure)
+             y = final_df['Gp(bscf)'].values
+             model = LinearRegression()
+             model.fit(X, y) 
+             pressure_zero = np.array([[0]])
+             ogip_lim = model.predict(pressure_zero)[0]
+             if ogip_lim > 0:
+                  pass
+             else:
+                  ogip_lim = 0
+
+
+        except:
+             pass
 #Section 2 end 
         st.subheader("P/Z Analysis")
         try :
-            pres_in = st.slider(label='Initial Reservoir Pressure (Psia)',min_value=500., max_value=float(uplim),step=1.,format='%.0f',value=5444.)
+            pres_in = st.slider(label='Initial Reservoir Pressure (Psia)',min_value=float(uplim-1000), max_value=float(uplim+1000),step=1.,format='%.0f',value=float(uplim))
             res_temp = st.slider(label='Reservoir Temperature (°F)',min_value=60., max_value=250.,step=1.,format='%.0f',value = 100.0)
             gas_sg = st.slider(label='Gas Specific Gravity',min_value=0.5, max_value=.7,step=0.01,format='%0.2f',value=0.6)
-            ogip = st.slider(label='OGIP(Bscf)',min_value=0., max_value=500.,step=.1,format='%.1f',value=74.9)
-            pres_ab = st.slider(label='Abandonment Pressure (Psia)',min_value=100., max_value=1000.,step=1.,format='%.0f',value=629.)
+            ogip = st.slider(label='OGIP(Bscf)',min_value=ogip_lim-20, max_value=ogip_lim+50,step=.1,format='%.1f',value=ogip_lim)
+            pres_ab = st.slider(label='Abandonment Pressure (Psia)',min_value=100., max_value=1000.,step=1.,format='%.0f',value=float(uplim/10))
         except:
              print("Provide Proper input")
         st.markdown("---") 
@@ -142,21 +162,7 @@ with col3:
         try:
             #st.subheader("To the dowload the caculated Z and P/Z values")
             download = zcalc()
-            #downloading as a csv file
-            @st.cache_data
-            def convert_df(df):
-                return df.to_csv(index=False).encode("utf-8")
-            csv = convert_df(download)
-            if len(final_df) == 0:
-                 pass
-            else:
-                st.download_button(
-                label="Download Analysis",
-                data=csv,
-                file_name="Calculated_Z.csv",
-                mime="text/csv",
-)
-            #st.write(zcalc())
+
         except NameError:
             print("Import values to view the final table")
 
@@ -260,5 +266,67 @@ with col4:
         st.plotly_chart(fig)
     except:
         print("Provide proper input")
+
+with col3:
+     
+     try:
+          in_1 = [eur]
+          in_2 = [pres_ab]
+          new_df = pd.DataFrame({'Gp(bscf)': in_1, 'P_avg(psia)': in_2})
+          
+
+     except:
+          print("Enter Proper input")
+
+     def zcalc():
+            
+        new_df['Z'] = new_df['P_avg(psia)'].apply(gas_compressibility)
+        new_df['P/Z'] = new_df['P_avg(psia)'] / new_df['Z']
+        return new_df
+     try:
+        new = zcalc()
+        new_df = pd.concat([final_df,new],axis=0)
+        new_df['Gp(bscf)'] = new_df['Gp(bscf)'].round(1)
+        new_df['P_avg(psia)'] = new_df['P_avg(psia)'].astype(int)
+        new_df['Z'] = new_df['Z'].round(4)
+        new_df['P/Z'] = new_df['P/Z'].astype(int)
+        new_df = new_df.reset_index(drop=True)
+        new_df['Comment'] = new_df['Z']
+        new_df['Comment'][0] = "Initial Pressure"
+        new_df['Comment'][1:] = None
+        new_df['Comment'][-1:] = "Abandonment(=>EUR)"
+        #new_row = {'Gp(bscf)': ogip, 'P/Z': 0,'Comment':"OGIP"}
+        #new_df = new_df.append(new_row,ignore_index=True)
+        new_df.loc[len(new_df)] = [round(ogip,1),None,None,0,"OGIP"]
+        new_df.loc[len(new_df)] =['[bscf]','[psia]',None,None,None]
+        new_df.columns = ['Gp','P_avg','Z','P/Z','Comment']
+        last_row = new_df.iloc[-1]
+        new_df = new_df.iloc[:-1]
+        df = pd.concat([pd.DataFrame(last_row).T, new_df], ignore_index=True)
+        #st.dataframe(df)
+     except:
+        print("Provide Proper Input")
+     try:
+        @st.cache_data
+        def convert_df(df):
+            return df.to_csv(index=False).encode("utf-8")
+        csv = convert_df(df)
+        if len(df) == 0:
+                pass
+        else:
+            st.download_button(
+            label="Download Analysis",
+            data=csv,
+            file_name="Calculated_Z.csv",
+            mime="text/csv",
+)
+        
+     except NameError:
+        print("Import values to view the final table")
+     
+
+
+     
+
 
 
