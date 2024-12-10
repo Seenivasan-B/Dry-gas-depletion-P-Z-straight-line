@@ -317,7 +317,7 @@ with col3:
             st.download_button(
             label="Download Analysis",
             data=csv,
-            file_name="Calculated_Z.csv",
+            file_name="P_Z Analysis.csv",
             mime="text/csv",
 )
         
