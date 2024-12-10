@@ -259,7 +259,8 @@ with col4:
         line=dict(color="red", width=1, dash="dash"))
 
         #zero line
-        fig.add_vline(x=0, line_width=1, line_color="black")
+        fig.add_vline(x=0, line_width=1, line_color="grey")
+        fig.add_hline(y=0,line_width=1,line_color = 'grey')
 
         
     
