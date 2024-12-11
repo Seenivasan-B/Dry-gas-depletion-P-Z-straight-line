@@ -101,7 +101,7 @@ with col3:
             res_temp = st.slider(label='Reservoir Temperature (°F)',min_value=60., max_value=250.,step=1.,format='%.0f',value = 100.0)
             gas_sg = st.slider(label='Gas Specific Gravity',min_value=0.5, max_value=.7,step=0.01,format='%0.2f',value=0.6)
             ogip = st.slider(label='OGIP(Bscf)',min_value=(ogip_lim*0.5), max_value=(ogip_lim*2),step=.1,format='%.1f',value=ogip_lim)
-            pres_ab = st.slider(label='Abandonment Pressure (Psia)',min_value=(uplim*0.5), max_value=1000.,step=1.,format='%.0f',value=float(uplim/10))
+            pres_ab = st.slider(label='Abandonment Pressure (Psia)',min_value=100., max_value=(uplim*0.5),step=1.,format='%.0f',value=float(uplim/10))
         except:
              print("Provide Proper input")
         st.markdown("---") 
