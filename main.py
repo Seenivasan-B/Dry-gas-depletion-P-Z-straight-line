@@ -6,6 +6,7 @@ import numpy as np
 import plotly.express as px
 from sklearn.linear_model import LinearRegression
 from io import BytesIO
+import pyperclip
 
 #Initialize the wide mode by default
 st.set_page_config(layout="wide")
@@ -86,7 +87,10 @@ with col2:
                 st.session_state.load_state = True
                 try:
                 # Read the clipboard content into a pandas DataFrame
-                    df = pd.read_clipboard(header=None)  
+                    df = pyperclip.paste() 
+                    st.write(df)
+                    df = pd.DataFrame(df,columns =['Gp(bscf)', 'P_avg(psia)'] )
+                    st.write(df)
                     df = df.replace(',', '', regex=True)
                     df = df.astype(float)
                     # Check for exactly 2 columns
