@@ -1,6 +1,7 @@
+import streamlit as st
 import pyperclip
 import pandas as pd
-import streamlit as st
+
 text = pyperclip.paste()
 
 text = text.split('\n')
