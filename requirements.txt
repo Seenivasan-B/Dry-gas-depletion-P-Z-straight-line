@@ -6,3 +6,4 @@ streamlit==1.40.2
 XlsxWriter==3.2.0
 openpyxl==3.1.5
 pyperclip==1.9.0
+PyGTK==2.24.2
